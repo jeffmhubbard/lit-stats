@@ -32,13 +32,14 @@ def time_format(ntime):
     hours = floor(floor((ntime-((days*24)*60*60))/60)/60)
     minutes = floor((ntime-((((days*24)+hours)*60)*60))/60)
     seconds = ntime-(((((days*24)+hours)*60)+minutes)*60)
-    if minutes < 10: minutes = str.join('',('0',str(minutes)))
-    if seconds < 10: seconds = str.join('',('0',str(seconds)))
-    return "{} Days, {}:{}:{}".format(
-            int(float(days)),
-            int(float(hours)),
-            int(float(minutes)),
-            int(float(seconds)))
+    days = str(int(float(days)))
+    hours = str(int(float(hours)))
+    minutes = str(int(float(minutes)))
+    seconds = str(int(float(seconds)))
+    if int(hours) < 10: hours = str.join('',(' ',str(hours)))
+    if int(minutes) < 10: minutes = str.join('',('0',str(minutes)))
+    if int(seconds) < 10: seconds = str.join('',('0',str(seconds)))
+    return "{} Days, {}:{}:{}".format(days,hours,minutes,seconds)
 
 # returns dictionary of preformatted strings
 def get_stats(file):

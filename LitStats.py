@@ -36,7 +36,7 @@ def time_format(ntime):
     hours = str(int(float(hours)))
     minutes = str(int(float(minutes)))
     seconds = str(int(float(seconds)))
-    if int(hours) < 10: hours = str.join('',(' ',str(hours)))
+    if int(hours) < 10: hours = str.join('',('0',str(hours)))
     if int(minutes) < 10: minutes = str.join('',('0',str(minutes)))
     if int(seconds) < 10: seconds = str.join('',('0',str(seconds)))
     return "{} Days, {}:{}:{}".format(days,hours,minutes,seconds)

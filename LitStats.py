@@ -3,21 +3,26 @@
 
 # LitStats.py - display stats from Litcube's Universe
 
-from __future__ import print_function
 import os, sys
+import traceback
+
 from time import sleep
 from math import floor
 
-# settings
-interval = 10
+import curses
+
+
+interval = 1
 log_file = '~/.config/EgoSoft/X3AP/log09004.txt'
 
-# return comma seperated numbers ie. 1,000,000,000
+
 def add_commas(amount): 
+    """Return comma separated numbers"""
     return ("{:,}".format(int(amount)))
 
-# calculate fightrank loot chance
-def calc_flc(rank):
+
+def get_flc_perc(rank):
+    """Calculate fightrank loot chance"""
     total = 1000000
     factor = 385
     chance = floor((rank * 100) / total) 
@@ -26,218 +31,303 @@ def calc_flc(rank):
     chance = chance / 10000
     return chance
 
-# format time for humans
-def time_format(ntime):
-    days = floor(floor(floor(ntime/60)/60)/24)
-    hours = floor(floor((ntime-((days*24)*60*60))/60)/60)
-    minutes = floor((ntime-((((days*24)+hours)*60)*60))/60)
-    seconds = ntime-(((((days*24)+hours)*60)+minutes)*60)
+
+def get_time_string(dtime):
+    """Return time string"""
+    days = floor(floor(floor(dtime/60)/60)/24)
+    hours = floor(floor((dtime-((days*24)*60*60))/60)/60)
+    minutes = floor((dtime-((((days*24)+hours)*60)*60))/60)
+    seconds = dtime-(((((days*24)+hours)*60)+minutes)*60)
     days = str(int(float(days)))
     hours = str(int(float(hours)))
     minutes = str(int(float(minutes)))
     seconds = str(int(float(seconds)))
-    if int(hours) < 10: hours = str.join('',('0',str(hours)))
-    if int(minutes) < 10: minutes = str.join('',('0',str(minutes)))
-    if int(seconds) < 10: seconds = str.join('',('0',str(seconds)))
+    if int(hours) < 10: hours = str.join('',('0',hours))
+    if int(minutes) < 10: minutes = str.join('',('0',minutes))
+    if int(seconds) < 10: seconds = str.join('',('0',seconds))
     return "{} Days, {}:{}:{}".format(days,hours,minutes,seconds)
 
-# returns dictionary of preformatted strings
+
+def get_rank_title(title):
+    """Split rank from title string, return (rank,title)"""
+    return title.split(" - ")
+
+
 def get_stats(file):
+    """Reads log file, returns dict"""
     file = os.path.expanduser(file)
     with open(file) as fp:
     
         lines = fp.read().split('\n')
-        data = {}
-    
-        credits = lines[0] #1
-        credits = add_commas(credits)
-        data['Credits'] = credits
-    
-        playtime = lines[1] #2
-        playtime = time_format(int(playtime))
-        data['PlayTime'] = playtime
-    
-        realtime = lines[2] #3
-        realtime = time_format(int(realtime))
-        data['RealTime'] = realtime
-    
-        argon_percent = lines[3] #4
-        data['NotorietyPercentArgon'] = argon_percent
-    
-        argon_title = lines[4] #5
-        data['NotorietyTitleArgon'] = argon_title
-    
-        boron_percent = lines[5] #6
-        data['NotorietyPercentBoron'] = boron_percent
-    
-        boron_title = lines[6] #7
-        data['NotorietyTitleBoron'] = boron_title
-    
-        split_percent = lines[7] #8
-        data['NotorietyPercentSplit'] = split_percent
-    
-        split_title = lines[8] #9
-        data['NotorietyTitleSplit'] = split_title
-    
-        paranid_percent = lines[9] #10
-        data['NotorietyPercentParanid'] = paranid_percent
-    
-        paranid_title = lines[10] #11
-        data['NotorietyTitleParanid'] = paranid_title
-    
-        teladi_percent = lines[11] #12
-        data['NotorietyPercentTeladi'] = teladi_percent
-    
-        teladi_title = lines[12] #13
-        data['NotorietyTitleTeladi'] = teladi_title
-    
-        goner_percent = lines[13] #14
-        data['NotorietyPercentGoner'] = goner_percent
-    
-        goner_title = lines[14] #15
-        data['NotorietyTitleGoner'] = goner_title
-    
-        terran_percent = lines[15] #16
-        data['NotorietyPercentTerran'] = terran_percent
-    
-        terran_title = lines[16] #17
-        data['NotorietyTitleTerran'] = terran_title
-    
-        atf_percent = lines[17] #18
-        data['NotorietyPercentATF'] = atf_percent
-    
-        atf_title = lines[18] #19
-        data['NotorietyTitleATF'] = atf_title
-    
-        pirates_percent = lines[19] #20
-        data['NotorietyPercentPirates'] = pirates_percent
-    
-        pirates_title = lines[20] #21
-        data['NotorietyTitlePirates'] = pirates_title
-    
-        yaki_percent = lines[21] #22
-        data['NotorietyPercentYaki'] = yaki_percent
-    
-        yaki_title = lines[22] #23
-        data['NotorietyTitleYaki'] = yaki_title
-    
-        count_m1 = lines[23] #24
-        count_m1 = add_commas(count_m1)
-        data['PropertyCountM1'] = count_m1
-    
-        count_m2 = lines[24] #25
-        count_m2 = add_commas(count_m2)
-        data['PropertyCountM2'] = count_m2
-    
-        count_m3 = lines[25] #26
-        count_m3 = add_commas(count_m3)
-        data['PropertyCountM3'] = count_m3
-    
-        count_m4 = lines[26] #27
-        count_m4 = add_commas(count_m4)
-        data['PropertyCountM4'] = count_m4
-    
-        count_m5 = lines[27] #28
-        count_m5 = add_commas(count_m5)
-        data['PropertyCountM5'] = count_m5
-    
-        count_m6 = lines[28] #29
-        count_m6 = add_commas(count_m6)
-        data['PropertyCountM6'] = count_m6
-    
-        count_m7 = lines[29] #30
-        count_m7 = add_commas(count_m7)
-        data['PropertyCountM7'] = count_m7
-    
-        count_m8 = lines[30] #31
-        count_m8 = add_commas(count_m8)
-        data['PropertyCountM8'] = count_m8
-    
-        count_ts = lines[31] #32
-        count_ts = add_commas(count_ts)
-        data['PropertyCountTS'] = count_ts
-    
-        count_tp = lines[32] #33
-        count_tp = add_commas(count_tp)
-        data['PropertyCountTP'] = count_tp
-    
-        count_tm = lines[33] #34
-        count_tm = add_commas(count_tm)
-        data['PropertyCountTM'] = count_tm
-    
-        count_tl = lines[34] #35
-        count_tl = add_commas(count_tl)
-        data['PropertyCountTL'] = count_tl
-    
-        count_station = lines[35] #36
-        count_station = add_commas(count_station)
-        data['PropertyCountStation'] = count_station
-    
-        count_sat = lines[36] #37
-        count_sat = add_commas(count_sat)
-        data['PropertyCountSatellite'] = count_sat
-    
-        trade_percent = lines[37] #38
-        data['TradeRankPercent'] = trade_percent
-    
-        trade_title = lines[38] #39
-        data['TradeRankTitle'] = trade_title
-    
-        fight_percent = lines[39] #40
-        data['FightRankPercent'] = fight_percent
-    
-        fight_title = lines[40] #41
-        data['FightRankTitle'] = fight_title
-    
-        flc_rank = lines[41] #42
-        flc_percent = calc_flc(int(flc_rank))
-        flc_percent = round(flc_percent, 5)
-        data['FLCPercent'] = flc_percent
-
-        blank = lines[42] #43
-
+        data = {
+            'credits':          lines[0],
+            'time_played':      lines[1],
+            'time_real':        lines[2],
+            'argon_perc':       lines[3],
+            'argon_title':      lines[4],
+            'boron_perc':       lines[5],
+            'boron_title':      lines[6],
+            'split_perc':       lines[7],
+            'split_title':      lines[8],
+            'paranid_perc':     lines[9],
+            'paranid_title':    lines[10],
+            'teladi_perc':      lines[11],
+            'teladi_title':     lines[12],
+            'goner_perc':       lines[13],
+            'goner_title':      lines[14],
+            'terran_perc':      lines[15],
+            'terran_title':     lines[16],
+            'atf_perc':         lines[17],
+            'atf_title':        lines[18],
+            'pirates_perc':     lines[19],
+            'pirates_title':    lines[20],
+            'yaki_perc':        lines[21],
+            'yaki_title':       lines[22],
+            'count_m1':         lines[23],
+            'count_m2':         lines[24],
+            'count_m3':         lines[25],
+            'count_m4':         lines[26],
+            'count_m5':         lines[27],
+            'count_m6':         lines[28],
+            'count_m7':         lines[29],
+            'count_m8':         lines[30],
+            'count_ts':         lines[31],
+            'count_tp':         lines[32],
+            'count_tm':         lines[33],
+            'count_tl':         lines[34],
+            'count_station':    lines[35],
+            'count_sat':        lines[36],
+            'trade_perc':       lines[37],
+            'trade_title':      lines[38],
+            'combat_perc':       lines[39],
+            'combat_title':      lines[40],
+            'flc_rank':         lines[41],
+        }
     return data
 
-# displays data with snazzy colors and line art
-def display(data):
-    print(chr(27) + "[2J") # clears terminal
-    print("\033[90m╭╼\033[97;3;1m Litcube's Universe \033[90m╾╮\033[00m",
-        "\033[90m├──────────────────────┴───────────────────────────╼\033[00m",
-        "\033[90m│ \033[97mCredits\033[00m:\t{}".format(data['Credits']),
-        "\033[90m│ \033[97mTrade Rank\033[00m:\t{}%\t{}".format(data['TradeRankPercent'],data['TradeRankTitle']),
-        "\033[90m│ \033[97mFight Rank\033[00m:\t{}%\t{}".format(data['FightRankPercent'],data['FightRankTitle']),
-        "\033[90m│ \033[97mF.L.C.\033[00m:\t{}%".format(data['FLCPercent']),
-        "\033[90m│ \033[97mPlay Time\033[00m:\t{}".format(data['PlayTime']),
-        "\033[90m│ \033[97mReal Time\033[00m:\t{}".format(data['RealTime']),
-        "\033[90m├──────────────────────────────╼\033[00m",
-        "\033[90m│ \033[94mArgon\033[00m:\t{}%\t{}".format(data['NotorietyPercentArgon'],data['NotorietyTitleArgon']),
-        "\033[90m│ \033[92mBoron\033[00m:\t{}%\t{}".format(data['NotorietyPercentBoron'],data['NotorietyTitleBoron']),
-        "\033[90m│ \033[33mParanid\033[00m:\t{}%\t{}".format(data['NotorietyPercentParanid'],data['NotorietyTitleParanid']),
-        "\033[90m│ \033[35mSplit\033[00m:\t{}%\t{}".format(data['NotorietyPercentSplit'],data['NotorietyTitleSplit']),
-        "\033[90m│ \033[93mTeladi\033[00m:\t{}%\t{}".format(data['NotorietyPercentTeladi'],data['NotorietyTitleTeladi']),
-        "\033[90m│ \033[34mGoner\033[00m:\t{}%\t{}".format(data['NotorietyPercentGoner'],data['NotorietyTitleGoner']),
-        "\033[90m│ \033[36mTerran\033[00m:\t{}%\t{}".format(data['NotorietyPercentTerran'],data['NotorietyTitleTerran']),
-        "\033[90m│ \033[36mATF\033[00m:\t\t{}%\t{}".format(data['NotorietyPercentATF'],data['NotorietyTitleATF']),
-        "\033[90m│ \033[31mPirates\033[00m:\t{}%\t{}".format(data['NotorietyPercentPirates'],data['NotorietyTitlePirates']),
-        "\033[90m│ \033[95mYaki\033[00m:\t\t{}%\t{}".format(data['NotorietyPercentYaki'],data['NotorietyTitleYaki']),
-        "\033[90m├──────────╼\033[00m",
-        "\033[90m│ \033[32mM5\033[00m:\t{}\t\t\033[32mM1\033[00m:\t{}".format(data['PropertyCountM5'],data['PropertyCountM1']),
-        "\033[90m│ \033[32mM4\033[00m:\t{}\t\t\033[32mM2\033[00m:\t{}".format(data['PropertyCountM4'],data['PropertyCountM2']),
-        "\033[90m│ \033[32mM3\033[00m:\t{}\t\t\033[32mTS\033[00m:\t{}".format(data['PropertyCountM3'],data['PropertyCountTS']),
-        "\033[90m│ \033[32mM6\033[00m:\t{}\t\t\033[32mTP\033[00m:\t{}".format(data['PropertyCountM6'],data['PropertyCountTP']),
-        "\033[90m│ \033[32mM8\033[00m:\t{}\t\t\033[32mTL\033[00m:\t{}".format(data['PropertyCountM8'],data['PropertyCountTL']),
-        "\033[90m│ \033[32mM7\033[00m:\t{}\t\t\033[32mSt\033[00m:\t{}".format(data['PropertyCountM7'],data['PropertyCountStation']),
-        "\033[90m│ \033[32mTM\033[00m:\t{}\t\t\033[32mSat\033[00m:\t{}".format(data['PropertyCountTM'],data['PropertyCountSatellite']),
-        "\033[90m╰╼\033[00m",
-        sep='\n')
 
-def main():
-    # loop or die
-    while True:
-        display(data=get_stats(log_file))
+def write_stats(scr,width):
+    """Format and write out stats"""
+    data = get_stats(log_file)
+
+    credits = add_commas(data['credits'])
+    scr.addstr(1,16,credits,curses.color_pair(4))
+
+    trade_rank, trade_title = get_rank_title(data['trade_title'])
+    trade_perc = data['trade_perc'] + '%'
+    scr.addnstr(2,16,trade_rank,width-17)
+    scr.addnstr(2,20,trade_perc,width-21)
+    scr.addnstr(2,25,trade_title,width-26)
+
+    combat_rank, combat_title = get_rank_title(data['combat_title'])
+    combat_perc = data['combat_perc'] + '%'
+    scr.addnstr(3,16,combat_rank,width-17)
+    scr.addnstr(3,20,combat_perc,width-21)
+    scr.addnstr(3,25,combat_title,width-26)
+
+    flc_perc = get_flc_perc(int(data['flc_rank']))
+    flc_perc = str(flc_perc) + '%'
+    scr.addnstr(4,16,flc_perc,width-21)
+
+    time_played = get_time_string(int(data['time_played']))
+    scr.addnstr(5,16,time_played,width-21)
+
+    time_real = get_time_string(int(data['time_real']))
+    scr.addnstr(6,16,time_real,width-21)
+
+    argon_rank, argon_title = get_rank_title(data['argon_title'])
+    argon_perc = data['argon_perc'] + '%'
+    scr.addnstr(8,16,argon_rank,width-17)
+    scr.addnstr(8,20,argon_perc,width-21)
+    scr.addnstr(8,25,argon_title,width-26)
+
+    boron_rank, boron_title = get_rank_title(data['boron_title'])
+    boron_perc = data['boron_perc'] + '%'
+    scr.addnstr(9,16,boron_rank,width-17)
+    scr.addnstr(9,20,boron_perc,width-21)
+    scr.addnstr(9,25,boron_title,width-26)
+
+    paranid_rank, paranid_title = get_rank_title(data['paranid_title'])
+    paranid_perc = data['paranid_perc'] + '%'
+    scr.addnstr(10,16,paranid_rank,width-17)
+    scr.addnstr(10,20,paranid_perc,width-21)
+    scr.addnstr(10,25,paranid_title,width-26)
+
+    split_rank, split_title = get_rank_title(data['split_title'])
+    split_perc = data['split_perc'] + '%'
+    scr.addnstr(11,16,split_rank,width-17)
+    scr.addnstr(11,20,split_perc,width-21)
+    scr.addnstr(11,25,split_title,width-26)
+
+    teladi_rank, teladi_title = get_rank_title(data['teladi_title'])
+    teladi_perc = data['teladi_perc'] + '%'
+    scr.addnstr(12,16,teladi_rank,width-17)
+    scr.addnstr(12,20,teladi_perc,width-21)
+    scr.addnstr(12,25,teladi_title,width-26)
+
+    terran_rank, terran_title = get_rank_title(data['terran_title'])
+    terran_perc = data['terran_perc'] + '%'
+    scr.addnstr(13,16,terran_rank,width-17)
+    scr.addnstr(13,20,terran_perc,width-21)
+    scr.addnstr(13,25,terran_title,width-26)
+
+    atf_rank, atf_title = get_rank_title(data['atf_title'])
+    atf_perc = data['atf_perc'] + '%'
+    scr.addnstr(14,16,atf_rank,width-17)
+    scr.addnstr(14,20,atf_perc,width-21)
+    scr.addnstr(14,25,atf_title,width-26)
+
+    goner_rank, goner_title = get_rank_title(data['goner_title'])
+    goner_perc = data['goner_perc'] + '%'
+    scr.addnstr(15,16,goner_rank,width-17)
+    scr.addnstr(15,20,goner_perc,width-21)
+    scr.addnstr(15,25,goner_title,width-26)
+
+    yaki_rank, yaki_title = get_rank_title(data['yaki_title'])
+    yaki_perc = data['yaki_perc'] + '%'
+    scr.addnstr(16,16,yaki_rank,width-17)
+    scr.addnstr(16,20,yaki_perc,width-21)
+    scr.addnstr(16,25,yaki_title,width-26)
+
+    pirates_rank, pirates_title = get_rank_title(data['pirates_title'])
+    pirates_perc = data['pirates_perc'] + '%'
+    scr.addnstr(17,16,pirates_rank,width-17)
+    scr.addnstr(17,20,pirates_perc,width-21)
+    scr.addnstr(17,25,pirates_title,width-26)
+
+    count_m5 = add_commas(data['count_m5'])
+    scr.addnstr(19,7,count_m5,width-21)
+    count_m4 = add_commas(data['count_m4'])
+    scr.addnstr(20,7,count_m4,width-21)
+    count_m3 = add_commas(data['count_m3'])
+    scr.addnstr(21,7,count_m3,width-21)
+    count_m6 = add_commas(data['count_m6'])
+    scr.addnstr(22,7,count_m6,width-21)
+
+    count_m8 = add_commas(data['count_m8'])
+    scr.addnstr(19,19,count_m8,width-21)
+    count_m7 = add_commas(data['count_m7'])
+    scr.addnstr(20,19,count_m7,width-21)
+    count_m1 = add_commas(data['count_m1'])
+    scr.addnstr(21,19,count_m1,width-21)
+    count_m2 = add_commas(data['count_m2'])
+    scr.addnstr(22,19,count_m2,width-21)
+
+    count_tm = add_commas(data['count_tm'])
+    scr.addnstr(19,31,count_tm,width-21)
+    count_ts = add_commas(data['count_ts'])
+    scr.addnstr(20,31,count_ts,width-21)
+    count_tp = add_commas(data['count_tp'])
+    scr.addnstr(21,31,count_tp,width-21)
+    count_tl = add_commas(data['count_tl'])
+    scr.addnstr(22,31,count_tl,width-21)
+
+    count_station = add_commas(data['count_station'])
+    scr.addnstr(19,43,count_station,width-21)
+    count_sat = add_commas(data['count_sat'])
+    scr.addnstr(20,43,count_sat,width-21)
+
+    scr.refresh()
+
+
+def window(scr,y,x):
+    """Draw container and labels"""
+    scr.erase()
+
+    scr.box()
+
+    scr.addstr(1,2,"Credits",curses.color_pair(8)|curses.A_BOLD)
+    scr.addstr(2,2,"Trade Rank",curses.color_pair(8)|curses.A_BOLD)
+    scr.addstr(3,2,"Combat Rank",curses.color_pair(8)|curses.A_BOLD)
+    scr.addstr(4,2,"Loot Chance",curses.color_pair(8)|curses.A_BOLD)
+    scr.addstr(5,2,"Play Time",curses.color_pair(8)|curses.A_BOLD)
+    scr.addstr(6,2,"Real Time",curses.color_pair(8)|curses.A_BOLD)
+
+    scr.hline(7,2,curses.ACS_HLINE,x-4)
+
+    scr.addstr(8,2,"Argon",curses.color_pair(5)|curses.A_BOLD)
+    scr.addstr(9,2,"Boron",curses.color_pair(3)|curses.A_BOLD)
+    scr.addstr(10,2,"Paranid",curses.color_pair(2)|curses.A_BOLD)
+    scr.addstr(11,2,"Split",curses.color_pair(6)|curses.A_BOLD)
+    scr.addstr(12,2,"Teldai",curses.color_pair(4)|curses.A_BOLD)
+    scr.addstr(13,2,"Terran",curses.color_pair(7)|curses.A_BOLD)
+    scr.addstr(14,2,"ATF",curses.color_pair(7)|curses.A_BOLD)
+    scr.addstr(15,2,"Goner",curses.color_pair(5)|curses.A_BOLD)
+    scr.addstr(16,2,"Yaki",curses.color_pair(6)|curses.A_BOLD)
+    scr.addstr(17,2,"Pirates",curses.color_pair(2)|curses.A_BOLD)
+
+    scr.hline(18,2,curses.ACS_HLINE,x-4)
+
+    scr.addstr(19,2,"M5",curses.color_pair(3))
+    scr.addstr(20,2,"M4",curses.color_pair(3))
+    scr.addstr(21,2,"M3",curses.color_pair(3))
+    scr.addstr(22,2,"M6",curses.color_pair(3))
+
+    scr.addstr(19,14,"M8",curses.color_pair(3))
+    scr.addstr(20,14,"M7",curses.color_pair(3))
+    scr.addstr(21,14,"M1",curses.color_pair(3))
+    scr.addstr(22,14,"M2",curses.color_pair(3))
+
+    scr.addstr(19,26,"TM",curses.color_pair(3))
+    scr.addstr(20,26,"TS",curses.color_pair(3))
+    scr.addstr(21,26,"TP",curses.color_pair(3))
+    scr.addstr(22,26,"TL",curses.color_pair(3))
+
+    scr.addstr(19,38,"St",curses.color_pair(3))
+    scr.addstr(20,38,"Sat",curses.color_pair(3))
+
+    scr.refresh()
+
+
+def loop(scr):
+    """Call main window, watch for resize or getch"""
+    scr.nodelay(1)
+    y,x = scr.getmaxyx()
+    window(scr,y,x)
+    while 1:
+        keypress = scr.getch()
+        if keypress == curses.KEY_RESIZE:
+            y,x = scr.getmaxyx()
+            window(scr,y,x)
+            scr.refresh()
+        if keypress != -1:
+            try:
+                instr = str(chr(keypress))
+            except:
+                pass
+            else:
+                if instr.upper() == 'Q':
+                    break
+        write_stats(scr,x)
         sleep(interval)
 
-if __name__ == "__main__":
+
+def main():
+    """Setup curses and start loop()"""
+    try:
+        stdscr = curses.initscr()
+        curses.noecho()
+        curses.cbreak()
+        curses.curs_set(0)
+
+        curses.start_color()
+        curses.use_default_colors()
+        for i in range(1,16):
+            curses.init_pair(i, i-1, -1)
+
+        loop(stdscr)
+
+        curses.echo()
+        curses.nocbreak()
+        curses.endwin()
+    except:
+        curses.echo()
+        curses.nocbreak()
+        curses.endwin()
+        traceback.print_exc()
+
+
+if __name__=='__main__':
     main()
 
 # vim: set ft=python:

@@ -1,0 +1,43 @@
+18000
+102
+102
+50
+0 - Citizen
+50
+0 - Acquaintance
+50
+0 - Creature
+50
+0 - Nomad
+50
+0 - Profit Initiate
+0
+3 - Believer
+50
+0 - Citizen
+50
+0 - No System Access
+0
+-3 - Not a Friend of Ours
+50
+0 - Outsider
+0
+0
+0
+0
+1
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0 - Salesman
+0
+0 - Harmless
+0
+

@@ -1,32 +1,50 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
+###########################################################
+# LitStats.py - Display stats for Litcube's Universe
+
+
 import os, sys, re
 import traceback
 import curses
 
-#from datetime import datetime
 from time import sleep
 from math import floor
 from collections import deque
 from textwrap import wrap
 
+
+###########################################################
+# settings that should probaly never need to be changed
+
+# INTERVAL - update every n seconds
 INTERVAL = 1
+# PATHS - paths to game files
 LOG_STATS = '~/.config/EgoSoft/X3AP/log09004.txt'
 LOG_ALERT = '~/.config/EgoSoft/X3AP/log06689.txt'
+
+
+###########################################################
+# read from sample file that are known to be valid
 
 DEBUG = False
 if len(sys.argv) > 1:
     if sys.argv[1] == '--debug':
         DEBUG = True
+        LOG_STATS = './sample_stats.txt'
+        LOG_ALERT = './sample_alert.txt'
+
+
+###########################################################
+# tools for stats window
 
 def add_commas(amount): 
     """Return comma separated numbers"""
     return ("{:,}".format(int(amount)))
 
-
 def get_flc_perc(rank):
-    """Calculate fightrank loot chance"""
+    """Return Fightrank Loot Chance percentage"""
     total = 1000000
     factor = 385
     chance = floor((rank * 100) / total) 
@@ -35,9 +53,8 @@ def get_flc_perc(rank):
     chance = chance / 10000
     return chance
 
-
 def get_elapsed(dtime):
-    """Return time string"""
+    """Return time elapsed string"""
     days = floor(floor(floor(dtime/60)/60)/24)
     hours = floor(floor((dtime-((days*24)*60*60))/60)/60)
     minutes = floor((dtime-((((days*24)+hours)*60)*60))/60)
@@ -54,37 +71,6 @@ def get_elapsed(dtime):
 def get_rank_title(title):
     """Split rank from title string, return (rank,title)"""
     return title.split(" - ")
-
-def set_color_pair(n,nmax):
-    """Return color_pair number based on percentage"""
-    if n == 0: n = 1
-    perc = 100 * float(n)/float(nmax)
-    if perc >= 75: color = 7 # cyan
-    elif perc < 75 and perc >= 50: color = 3 # green
-    elif perc < 50 and perc >= 25: color = 4 # yellow
-    else: color = 8 # white
-    return color
-
-def get_alert(file):
-    """Return message as list of lines"""
-    alert = []
-    file = os.path.expanduser(file)
-    with open(file) as fp:
-        dq = deque(fp, 24)
-        for i in dq:
-            alert.append(i.strip('\n'))
-    return alert[1:-2]
-
-def wrap_alert(data,max_x):
-    """Check line length, split into two lines if too wide"""
-    new_data = []
-    for line in data:
-        if len(line) > max_x:
-            for clip in wrap(line,max_x-2):
-                new_data.append(clip)
-        else:
-            new_data.append(line)
-    return new_data
 
 def get_stats(file):
     """Reads log file, returns dict"""
@@ -140,11 +126,49 @@ def get_stats(file):
         }
     return data
 
+def ranked_color(n,nmax):
+    """Return color_pair number based on percentage"""
+    if n == 0: n = 1
+    perc = 100 * float(n)/float(nmax)
+    if perc >= 75: color = 7 # cyan
+    elif perc < 75 and perc >= 50: color = 3 # green
+    elif perc < 50 and perc >= 25: color = 4 # yellow
+    else: color = 8 # white
+    return color
+
+
+###########################################################
+# tools for alert window
+
+def get_alert(file):
+    """Return message as list of lines"""
+    alert = []
+    file = os.path.expanduser(file)
+    with open(file) as fp:
+        dq = deque(fp, 24)
+        for i in dq:
+            alert.append(i.strip('\n'))
+    return alert[1:-2]
+
+def wrap_alert(data,max_x):
+    """Check line length, split into two lines if too wide"""
+    new_data = []
+    for line in data:
+        if len(line) > max_x:
+            for clip in wrap(line,max_x-2):
+                new_data.append(clip)
+        else:
+            new_data.append(line)
+    return new_data
+
+
+###########################################################
+# stats window
+
 def stat_win(win,max_y,max_x,show_alert=None):
     """Draw stat window with fields"""
     win.erase()
     stat = win.subpad(0,0)
-#    stat.box()
 
     stat.hline(0,1,curses.ACS_HLINE,max_x-2)
     stat.addstr(0,3," Litcube's Universe ",curses.color_pair(7)|curses.A_BOLD)
@@ -175,23 +199,23 @@ def stat_win(win,max_y,max_x,show_alert=None):
     stat.hline(18,1,curses.ACS_HLINE,max_x-2)
     stat.addstr(18,3," Properties ",curses.color_pair(8)|curses.A_BOLD)
 
-    stat.addstr(19,2,"M5",curses.color_pair(3))
-    stat.addstr(20,2,"M4",curses.color_pair(3))
-    stat.addstr(21,2,"M3",curses.color_pair(3))
-    stat.addstr(22,2,"M6",curses.color_pair(3))
+    stat.addstr(19,2,"M5",curses.color_pair(3)|curses.A_BOLD)
+    stat.addstr(20,2,"M4",curses.color_pair(3)|curses.A_BOLD)
+    stat.addstr(21,2,"M3",curses.color_pair(3)|curses.A_BOLD)
+    stat.addstr(22,2,"M6",curses.color_pair(3)|curses.A_BOLD)
 
-    stat.addstr(19,14,"M8",curses.color_pair(3))
-    stat.addstr(20,14,"M7",curses.color_pair(3))
-    stat.addstr(21,14,"M1",curses.color_pair(3))
-    stat.addstr(22,14,"M2",curses.color_pair(3))
+    stat.addstr(19,14,"M8",curses.color_pair(3)|curses.A_BOLD)
+    stat.addstr(20,14,"M7",curses.color_pair(3)|curses.A_BOLD)
+    stat.addstr(21,14,"M1",curses.color_pair(3)|curses.A_BOLD)
+    stat.addstr(22,14,"M2",curses.color_pair(3)|curses.A_BOLD)
 
-    stat.addstr(19,26,"TM",curses.color_pair(3))
-    stat.addstr(20,26,"TS",curses.color_pair(3))
-    stat.addstr(21,26,"TP",curses.color_pair(3))
-    stat.addstr(22,26,"TL",curses.color_pair(3))
+    stat.addstr(19,26,"TM",curses.color_pair(3)|curses.A_BOLD)
+    stat.addstr(20,26,"TS",curses.color_pair(3)|curses.A_BOLD)
+    stat.addstr(21,26,"TP",curses.color_pair(3)|curses.A_BOLD)
+    stat.addstr(22,26,"TL",curses.color_pair(3)|curses.A_BOLD)
 
-    stat.addstr(19,38,"St",curses.color_pair(3))
-    stat.addstr(20,38,"Sat",curses.color_pair(3))
+    stat.addstr(19,38,"St",curses.color_pair(3)|curses.A_BOLD)
+    stat.addstr(20,38,"Sat",curses.color_pair(3)|curses.A_BOLD)
 
     stat.refresh(0,0,0,0,max_y+1,max_x+1)
 
@@ -203,27 +227,27 @@ def write_stats(win,max_y,max_x):
 
     if data:
         credits = add_commas(data['credits'])
-        win.addstr(1,16,credits,curses.color_pair(4)|curses.A_BOLD)
+        win.addstr(1,16,credits,curses.color_pair(4))
 
         trade_rank, trade_title = get_rank_title(data['trade_title'])
         trade_perc = data['trade_perc']
-        rank = set_color_pair(trade_rank,30)
-        perc = set_color_pair(trade_perc,100)
+        rank = ranked_color(trade_rank,30)
+        perc = ranked_color(trade_perc,100)
         win.addnstr(2,16,trade_rank,2,curses.color_pair(rank))
         win.addnstr(2,20,trade_perc+'%',4,curses.color_pair(perc))
         win.addnstr(2,25,trade_title,max_x-5)
 
         combat_rank, combat_title = get_rank_title(data['combat_title'])
         combat_perc = data['combat_perc']
-        rank = set_color_pair(combat_rank,30)
-        perc = set_color_pair(combat_perc,100)
+        rank = ranked_color(combat_rank,30)
+        perc = ranked_color(combat_perc,100)
         win.addnstr(3,16,combat_rank,2,curses.color_pair(rank))
         win.addnstr(3,20,combat_perc+'%',4,curses.color_pair(perc))
         win.addnstr(3,25,combat_title,max_x-5)
 
         flc_perc = get_flc_perc(int(data['flc_rank']))
         flc_perc = str(flc_perc) 
-        perc = set_color_pair(flc_perc,100)
+        perc = ranked_color(flc_perc,100)
         win.addnstr(4,16,flc_perc+'%',max_x-21,curses.color_pair(perc))
 
         time_played = get_elapsed(int(data['time_played']))
@@ -234,80 +258,80 @@ def write_stats(win,max_y,max_x):
 
         argon_rank, argon_title = get_rank_title(data['argon_title'])
         argon_perc = data['argon_perc']
-        rank = set_color_pair(argon_rank,10)
-        perc = set_color_pair(argon_perc,100)
+        rank = ranked_color(argon_rank,10)
+        perc = ranked_color(argon_perc,100)
         win.addnstr(8,16,argon_rank,2,curses.color_pair(rank))
         win.addnstr(8,20,argon_perc+'%',4,curses.color_pair(perc))
         win.addnstr(8,25,argon_title,max_x-26)
 
         boron_rank, boron_title = get_rank_title(data['boron_title'])
         boron_perc = data['boron_perc']
-        rank = set_color_pair(boron_rank,10)
-        perc = set_color_pair(boron_perc,100)
+        rank = ranked_color(boron_rank,10)
+        perc = ranked_color(boron_perc,100)
         win.addnstr(9,16,boron_rank,2,curses.color_pair(rank))
         win.addnstr(9,20,boron_perc+'%',4,curses.color_pair(perc))
         win.addnstr(9,25,boron_title,max_x-26)
 
         paranid_rank, paranid_title = get_rank_title(data['paranid_title'])
         paranid_perc = data['paranid_perc']
-        rank = set_color_pair(paranid_rank,10)
-        perc = set_color_pair(paranid_perc,100)
+        rank = ranked_color(paranid_rank,10)
+        perc = ranked_color(paranid_perc,100)
         win.addnstr(10,16,paranid_rank,2,curses.color_pair(rank))
         win.addnstr(10,20,paranid_perc+'%',4,curses.color_pair(perc))
         win.addnstr(10,25,paranid_title,max_x-26)
 
         split_rank, split_title = get_rank_title(data['split_title'])
         split_perc = data['split_perc']
-        rank = set_color_pair(split_rank,10)
-        perc = set_color_pair(split_perc,100)
+        rank = ranked_color(split_rank,10)
+        perc = ranked_color(split_perc,100)
         win.addnstr(11,16,split_rank,2,curses.color_pair(rank))
         win.addnstr(11,20,split_perc+'%',4,curses.color_pair(perc))
         win.addnstr(11,25,split_title,max_x-26)
 
         teladi_rank, teladi_title = get_rank_title(data['teladi_title'])
         teladi_perc = data['teladi_perc']
-        rank = set_color_pair(teladi_rank,10)
-        perc = set_color_pair(teladi_perc,100)
+        rank = ranked_color(teladi_rank,10)
+        perc = ranked_color(teladi_perc,100)
         win.addnstr(12,16,teladi_rank,2,curses.color_pair(rank))
         win.addnstr(12,20,teladi_perc+'%',4,curses.color_pair(perc))
         win.addnstr(12,25,teladi_title,max_x-26)
 
         terran_rank, terran_title = get_rank_title(data['terran_title'])
         terran_perc = data['terran_perc']
-        rank = set_color_pair(terran_rank,10)
-        perc = set_color_pair(terran_perc,100)
+        rank = ranked_color(terran_rank,10)
+        perc = ranked_color(terran_perc,100)
         win.addnstr(13,16,terran_rank,2,curses.color_pair(rank))
         win.addnstr(13,20,terran_perc+'%',4,curses.color_pair(perc))
         win.addnstr(13,25,terran_title,max_x-26)
 
         atf_rank, atf_title = get_rank_title(data['atf_title'])
         atf_perc = data['atf_perc']
-        rank = set_color_pair(atf_rank,10)
-        perc = set_color_pair(atf_perc,100)
+        rank = ranked_color(atf_rank,10)
+        perc = ranked_color(atf_perc,100)
         win.addnstr(14,16,atf_rank,2,curses.color_pair(rank))
         win.addnstr(14,20,atf_perc+'%',4,curses.color_pair(perc))
         win.addnstr(14,25,atf_title,max_x-26)
 
         goner_rank, goner_title = get_rank_title(data['goner_title'])
         goner_perc = data['goner_perc']
-        rank = set_color_pair(goner_rank,10)
-        perc = set_color_pair(goner_perc,100)
+        rank = ranked_color(goner_rank,10)
+        perc = ranked_color(goner_perc,100)
         win.addnstr(15,16,goner_rank,2,curses.color_pair(rank))
         win.addnstr(15,20,goner_perc+'%',4,curses.color_pair(perc))
         win.addnstr(15,25,goner_title,max_x-26)
 
         yaki_rank, yaki_title = get_rank_title(data['yaki_title'])
         yaki_perc = data['yaki_perc']
-        rank = set_color_pair(yaki_rank,10)
-        perc = set_color_pair(yaki_perc,100)
+        rank = ranked_color(yaki_rank,10)
+        perc = ranked_color(yaki_perc,100)
         win.addnstr(16,16,yaki_rank,2,curses.color_pair(rank))
         win.addnstr(16,20,yaki_perc+'%',4,curses.color_pair(perc))
         win.addnstr(16,25,yaki_title,max_x-26)
 
         pirates_rank, pirates_title = get_rank_title(data['pirates_title'])
         pirates_perc = data['pirates_perc']
-        rank = set_color_pair(pirates_rank,10)
-        perc = set_color_pair(pirates_perc,100)
+        rank = ranked_color(pirates_rank,10)
+        perc = ranked_color(pirates_perc,100)
         win.addnstr(17,16,pirates_rank,2,curses.color_pair(rank))
         win.addnstr(17,20,pirates_perc+'%',4,curses.color_pair(perc))
         win.addnstr(17,25,pirates_title,max_x-26)
@@ -346,49 +370,48 @@ def write_stats(win,max_y,max_x):
 
         win.refresh(0,0,0,0,max_y+1,max_x+1)
 
-def alert_title(text):
-    words = text.split(']')
-    author = words[2].replace("[/green","")
-    timestamp = words[4].replace("  "," ",2)
 
-    if author and timestamp:
-    #if author:
-        #return " {} {} ".format(author.group(1),timestamp.group(1))
-        #return " {} ".format(author.group(1))
-#        return " {} {} ".format(author,timestamp)
-        return author, timestamp
-    return False
-
-#def extract(line):
-#    for asshole in line:
-#    mo = re.search(r'\](.*)\[', s)
-#    mo = re.search(r'\](.*)\[', mo)
-#    if mo:
-#        return mo.group(1)
-#    return ''
+###########################################################
+# stats window
 
 def alert_win(win,max_y,max_x):
-    """Draw message window"""
+    """Draw alert window"""
     alert = get_alert(LOG_ALERT)
     new_list = []
     if alert:
         row = 0
         win.erase()
         win = win.subpad(0,0)
-        win.hline(0,1,curses.ACS_HLINE,max_x-1)
-#        win.box()
+        win.hline(0,1,curses.ACS_HLINE,max_x-2)
         for line in wrap_alert(alert,max_x-1):
             if row == 0:
-                author,timestamp = alert_title(line)
+                author,urgency,timestamp = get_title(line)
                 alen = len(author)
+                ulen = len(urgency)
                 tlen = len(timestamp)
-                win.addnstr(row,3," {} ".format(author),max_x-2,curses.color_pair(3))
-                win.addnstr(row,alen+6," {} ".format(timestamp),max_x-2,curses.color_pair(2))
+                win.addnstr(row,3," {} ".format(author),max_x-2,curses.color_pair(3)|curses.A_BOLD)
+                win.addnstr(row,alen+6," {} ".format(timestamp),max_x-2,curses.color_pair(4)|curses.A_BOLD)
+                win.addnstr(row,max_x-(ulen+5)," {} ".format(urgency),max_x-2,curses.color_pair(2)|curses.A_BOLD)
             else:
             	win.addnstr(row,1,line,max_x-2)
             row += 1
         win.refresh(0,0,0,0,max_y,max_x)
 
+def get_title(text):
+    """Return author, urgency, and timestamp from first line"""
+    words = text.split(']')
+    author = words[2].replace("[/green","")
+    tmpstr = words[4].split()
+    urgency = tmpstr.pop(0)
+    timestamp = "{} {}".format(tmpstr[0],tmpstr[1])
+
+    if author and urgency and timestamp:
+        return author, urgency, timestamp
+    return False
+
+
+###########################################################
+# init curses
 
 def main(win):
     """Setup curses and start loop"""
@@ -435,13 +458,15 @@ def main(win):
             except:
                 pass
             else:
+                # space bar toggles windows
                 if key == ' ':
                     if cur_win == 1:
                         cur_win = 2
                     elif cur_win == 2:
                         cur_win = 1
                     pass
-                if key == 'Q':
+                # q to quit
+                if key == 'q':
                     break
 
         if cur_win == 1:
@@ -455,5 +480,6 @@ def main(win):
 
 if __name__ == '__main__':
     curses.wrapper(main)
-    #stdscr = curses.initscr()
-    #main(stdscr)
+
+
+# vim: ft=python:

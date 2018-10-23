@@ -217,7 +217,7 @@ def stat_win(win,max_y,max_x,show_alert=None):
     stat.addstr(19,38,"St",curses.color_pair(3)|curses.A_BOLD)
     stat.addstr(20,38,"Sat",curses.color_pair(3)|curses.A_BOLD)
 
-    stat.refresh(0,0,0,0,max_y+1,max_x+1)
+    stat.refresh(0,0,0,0,max_y,max_x)
 
     return stat
 
@@ -227,7 +227,7 @@ def write_stats(win,max_y,max_x):
 
     if data:
         credits = add_commas(data['credits'])
-        win.addstr(1,16,credits,curses.color_pair(4))
+        win.addnstr(1,16,credits,len(credits),curses.color_pair(4))
 
         trade_rank, trade_title = get_rank_title(data['trade_title'])
         trade_perc = data['trade_perc']
@@ -235,7 +235,7 @@ def write_stats(win,max_y,max_x):
         perc = ranked_color(trade_perc,100)
         win.addnstr(2,16,trade_rank,2,curses.color_pair(rank))
         win.addnstr(2,20,trade_perc+'%',4,curses.color_pair(perc))
-        win.addnstr(2,25,trade_title,max_x-5)
+        win.addnstr(2,25,trade_title,len(trade_title))
 
         combat_rank, combat_title = get_rank_title(data['combat_title'])
         combat_perc = data['combat_perc']
@@ -243,18 +243,18 @@ def write_stats(win,max_y,max_x):
         perc = ranked_color(combat_perc,100)
         win.addnstr(3,16,combat_rank,2,curses.color_pair(rank))
         win.addnstr(3,20,combat_perc+'%',4,curses.color_pair(perc))
-        win.addnstr(3,25,combat_title,max_x-5)
+        win.addnstr(3,25,combat_title,7)
 
         flc_perc = get_flc_perc(int(data['flc_rank']))
         flc_perc = str(flc_perc) 
         perc = ranked_color(flc_perc,100)
-        win.addnstr(4,16,flc_perc+'%',max_x-21,curses.color_pair(perc))
+        win.addnstr(4,16,flc_perc+'%',len(flc_perc),curses.color_pair(perc))
 
         time_played = get_elapsed(int(data['time_played']))
-        win.addnstr(5,16,time_played,max_x-21)
+        win.addnstr(5,16,time_played,len(time_played))
 
         time_real = get_elapsed(int(data['time_real']))
-        win.addnstr(6,16,time_real,max_x-21)
+        win.addnstr(6,16,time_real,len(time_real))
 
         argon_rank, argon_title = get_rank_title(data['argon_title'])
         argon_perc = data['argon_perc']
@@ -262,7 +262,7 @@ def write_stats(win,max_y,max_x):
         perc = ranked_color(argon_perc,100)
         win.addnstr(8,16,argon_rank,2,curses.color_pair(rank))
         win.addnstr(8,20,argon_perc+'%',4,curses.color_pair(perc))
-        win.addnstr(8,25,argon_title,max_x-26)
+        win.addnstr(8,25,argon_title,len(argon_title))
 
         boron_rank, boron_title = get_rank_title(data['boron_title'])
         boron_perc = data['boron_perc']
@@ -270,7 +270,7 @@ def write_stats(win,max_y,max_x):
         perc = ranked_color(boron_perc,100)
         win.addnstr(9,16,boron_rank,2,curses.color_pair(rank))
         win.addnstr(9,20,boron_perc+'%',4,curses.color_pair(perc))
-        win.addnstr(9,25,boron_title,max_x-26)
+        win.addnstr(9,25,boron_title,len(boron_title))
 
         paranid_rank, paranid_title = get_rank_title(data['paranid_title'])
         paranid_perc = data['paranid_perc']
@@ -278,7 +278,7 @@ def write_stats(win,max_y,max_x):
         perc = ranked_color(paranid_perc,100)
         win.addnstr(10,16,paranid_rank,2,curses.color_pair(rank))
         win.addnstr(10,20,paranid_perc+'%',4,curses.color_pair(perc))
-        win.addnstr(10,25,paranid_title,max_x-26)
+        win.addnstr(10,25,paranid_title,len(paranid_title))
 
         split_rank, split_title = get_rank_title(data['split_title'])
         split_perc = data['split_perc']
@@ -286,7 +286,7 @@ def write_stats(win,max_y,max_x):
         perc = ranked_color(split_perc,100)
         win.addnstr(11,16,split_rank,2,curses.color_pair(rank))
         win.addnstr(11,20,split_perc+'%',4,curses.color_pair(perc))
-        win.addnstr(11,25,split_title,max_x-26)
+        win.addnstr(11,25,split_title,len(split_title))
 
         teladi_rank, teladi_title = get_rank_title(data['teladi_title'])
         teladi_perc = data['teladi_perc']
@@ -294,7 +294,7 @@ def write_stats(win,max_y,max_x):
         perc = ranked_color(teladi_perc,100)
         win.addnstr(12,16,teladi_rank,2,curses.color_pair(rank))
         win.addnstr(12,20,teladi_perc+'%',4,curses.color_pair(perc))
-        win.addnstr(12,25,teladi_title,max_x-26)
+        win.addnstr(12,25,teladi_title,len(teladi_title))
 
         terran_rank, terran_title = get_rank_title(data['terran_title'])
         terran_perc = data['terran_perc']
@@ -302,7 +302,7 @@ def write_stats(win,max_y,max_x):
         perc = ranked_color(terran_perc,100)
         win.addnstr(13,16,terran_rank,2,curses.color_pair(rank))
         win.addnstr(13,20,terran_perc+'%',4,curses.color_pair(perc))
-        win.addnstr(13,25,terran_title,max_x-26)
+        win.addnstr(13,25,terran_title,len(terran_title))
 
         atf_rank, atf_title = get_rank_title(data['atf_title'])
         atf_perc = data['atf_perc']
@@ -310,7 +310,7 @@ def write_stats(win,max_y,max_x):
         perc = ranked_color(atf_perc,100)
         win.addnstr(14,16,atf_rank,2,curses.color_pair(rank))
         win.addnstr(14,20,atf_perc+'%',4,curses.color_pair(perc))
-        win.addnstr(14,25,atf_title,max_x-26)
+        win.addnstr(14,25,atf_title,len(atf_title))
 
         goner_rank, goner_title = get_rank_title(data['goner_title'])
         goner_perc = data['goner_perc']
@@ -318,7 +318,7 @@ def write_stats(win,max_y,max_x):
         perc = ranked_color(goner_perc,100)
         win.addnstr(15,16,goner_rank,2,curses.color_pair(rank))
         win.addnstr(15,20,goner_perc+'%',4,curses.color_pair(perc))
-        win.addnstr(15,25,goner_title,max_x-26)
+        win.addnstr(15,25,goner_title,len(goner_title))
 
         yaki_rank, yaki_title = get_rank_title(data['yaki_title'])
         yaki_perc = data['yaki_perc']
@@ -326,7 +326,7 @@ def write_stats(win,max_y,max_x):
         perc = ranked_color(yaki_perc,100)
         win.addnstr(16,16,yaki_rank,2,curses.color_pair(rank))
         win.addnstr(16,20,yaki_perc+'%',4,curses.color_pair(perc))
-        win.addnstr(16,25,yaki_title,max_x-26)
+        win.addnstr(16,25,yaki_title,len(yaki_title))
 
         pirates_rank, pirates_title = get_rank_title(data['pirates_title'])
         pirates_perc = data['pirates_perc']
@@ -334,7 +334,7 @@ def write_stats(win,max_y,max_x):
         perc = ranked_color(pirates_perc,100)
         win.addnstr(17,16,pirates_rank,2,curses.color_pair(rank))
         win.addnstr(17,20,pirates_perc+'%',4,curses.color_pair(perc))
-        win.addnstr(17,25,pirates_title,max_x-26)
+        win.addnstr(17,25,pirates_title,len(pirates_title))
 
         count_m5 = add_commas(data['count_m5'])
         win.addnstr(19,6,count_m5,6)
@@ -368,7 +368,7 @@ def write_stats(win,max_y,max_x):
         count_sat = add_commas(data['count_sat'])
         win.addnstr(20,42,count_sat,6)
 
-        win.refresh(0,0,0,0,max_y+1,max_x+1)
+        win.refresh(0,0,0,0,max_y,max_x)
 
 
 ###########################################################
@@ -383,17 +383,21 @@ def alert_win(win,max_y,max_x):
         win.erase()
         win = win.subpad(0,0)
         win.hline(0,1,curses.ACS_HLINE,max_x-2)
-        for line in wrap_alert(alert,max_x-1):
+        alert = wrap_alert(alert,max_x-5)
+        if len(alert) > max_y:
+            alert = alert[:max_y-1]
+            alert.append("...")
+        for line in alert:
             if row == 0:
                 author,urgency,timestamp = get_title(line)
                 alen = len(author)
                 ulen = len(urgency)
                 tlen = len(timestamp)
-                win.addnstr(row,3," {} ".format(author),max_x-2,curses.color_pair(3)|curses.A_BOLD)
-                win.addnstr(row,alen+6," {} ".format(timestamp),max_x-2,curses.color_pair(4)|curses.A_BOLD)
-                win.addnstr(row,max_x-(ulen+5)," {} ".format(urgency),max_x-2,curses.color_pair(2)|curses.A_BOLD)
+                win.addnstr(row,3," {} ".format(author),alen+2,curses.color_pair(3)|curses.A_BOLD)
+                win.addnstr(row,alen+6," {} ".format(timestamp),tlen+2,curses.color_pair(4)|curses.A_BOLD)
+                win.addnstr(row,max_x-ulen-5," {} ".format(urgency),ulen+2,curses.color_pair(2)|curses.A_BOLD)
             else:
-            	win.addnstr(row,1,line,max_x-2)
+            	win.addnstr(row,1,line,len(line)+1)
             row += 1
         win.refresh(0,0,0,0,max_y,max_x)
 
@@ -423,34 +427,37 @@ def main(win):
     curses.use_default_colors()
     for i in range(1,16):
         curses.init_pair(i, i-1, -1)
-    curses.init_pair(17,curses.COLOR_BLACK,curses.COLOR_RED)
 
-    max_y,max_x = win.getmaxyx()
     cur_win = 1
     last_alert = None
     show_alert = False
+    first_run = True
 
-    swin = curses.newpad(max_y,max_x)
+    max_y,max_x = win.getmaxyx()
+    pad = curses.newpad(max_y,max_x)
 
     while True:
 
         max_y,max_x = win.getmaxyx()
-        try:
-            alert = get_alert(LOG_ALERT)
-            if not alert == last_alert:
-                last_alert = alert
-                show_alert = True
-        except:
-            pass
 
+        if first_run == True:
+            last_alert = get_alert(LOG_ALERT)
+            first_run = False
+
+        alert = get_alert(LOG_ALERT)
+        if not alert == last_alert:
+            last_alert = alert
+            show_alert = True
 
         pressed = win.getch()
         curses.flushinp()
 
         if pressed == curses.KEY_RESIZE:
-            win.erase()
-            swin = curses.newpad(max_y,max_x)
-            swin.refresh(0,0,0,0,max_y,max_x)
+            max_y,max_x = win.getmaxyx()
+            pad.erase()
+            pad = curses.newpad(max_y,max_x)
+            curses.resize_term(max_y,max_x)
+            pad.refresh(0,0,0,0,max_y,max_x)
 
         if pressed != -1:
             try:
@@ -470,16 +477,16 @@ def main(win):
                     break
 
         if cur_win == 1:
-            xwin = stat_win(swin,max_y,max_x,show_alert)
-            write_stats(xwin,max_y,max_x)
+            swin = stat_win(pad,max_y,max_x,show_alert)
+            write_stats(swin,max_y,max_x)
         if cur_win == 2:
-            xwin = alert_win(swin,max_y,max_x)
+            awin = alert_win(pad,max_y,max_x)
             show_alert = False
-        swin.refresh(0,0,0,0,max_y,max_x)
+        pad.refresh(0,0,0,0,max_y,max_x)
         sleep(INTERVAL)
 
 if __name__ == '__main__':
     curses.wrapper(main)
 
 
-# vim: ft=python:
+# vim: set ft=python:

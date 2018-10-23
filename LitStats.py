@@ -248,7 +248,7 @@ def write_stats(win,max_y,max_x):
         flc_perc = get_flc_perc(int(data['flc_rank']))
         flc_perc = str(flc_perc) 
         perc = ranked_color(flc_perc,100)
-        win.addnstr(4,16,flc_perc+'%',len(flc_perc),curses.color_pair(perc))
+        win.addnstr(4,16,flc_perc+'%',7,curses.color_pair(perc))
 
         time_played = get_elapsed(int(data['time_played']))
         win.addnstr(5,16,time_played,len(time_played))

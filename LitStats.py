@@ -26,12 +26,10 @@ LOG_ALERT = '~/.config/EgoSoft/X3AP/log06689.txt'
 
 
 ###########################################################
-# read from sample file that are known to be valid
+# read from sample files that are known to be valid
 
-DEBUG = False
 if len(sys.argv) > 1:
     if sys.argv[1] == '--debug':
-        DEBUG = True
         LOG_STATS = './sample_stats.txt'
         LOG_ALERT = './sample_alert.txt'
 
@@ -141,7 +139,7 @@ def ranked_color(n,nmax):
 # tools for alert window
 
 def get_alert(file):
-    """Return message as list of lines"""
+    """Return alert as list of lines"""
     alert = []
     file = os.path.expanduser(file)
     with open(file) as fp:
@@ -153,36 +151,42 @@ def get_alert(file):
     # return without dashed header and footer
     return alert[1:-2]
 
-def wrap_alert(alert, cols):
+def wrap_alert(alert, cols, rows):
     """Check line length, split into two lines if too wide"""
     nalert = []
+    # wrap lines greater than cols
     for line in alert:
         if len(line) > cols:
-            for wline in wrap(line,cols-2):
+            for wline in wrap(line, cols-2):
                 nalert.append(wline)
         else:
             nalert.append(line)
+    # truncate alert to fit terminal, append ...
+    if len(nalert)+1 > rows:
+        nalert = nalert[:rows-2]
+        nalert.append("...")
+
     return nalert
 
-def get_from(text):
+def get_header(line):
     """Return author, urgency, and timestamp from first line"""
 
     # delete empty str elements from list
     def _de(olist):
         nlist = []
-        for item in olist:
-            if not item == str(''):
-                nlist.append(item)
+        for oitem in olist:
+            if not oitem == str(''):
+                nlist.append(oitem)
         return nlist
 
     try:
         # replace bracket strings with ,
-        bs = ['[author]','[/author]','[green]','[/green]']
-        for s in bs:
-            text = text.replace(s,',')
+        slist = ['[author]', '[/author]', '[green]', '[/green]']
+        for sitem in slist:
+            line = line.replace(sitem, ',')
         # split author from rest of line
-        author, rest = _de(text.split(',,'))
-        urgency, date, time = _de(rest.split(' '))
+        author, rline = _de(line.split(',,'))
+        urgency, date, time = _de(rline.split(' '))
         timestamp = date + ' ' + time
         return author, urgency, timestamp
     except:
@@ -399,26 +403,20 @@ def write_stats(win,max_y,max_x):
 
 
 ###########################################################
-# stats window
+# alert window
 
 def alert_win(win,max_y,max_x,log):
     """Draw alert window"""
-    alert = get_alert(log)
-    # get header from alert
-    author, urgency, timestamp = get_from(alert.pop(0))
-
-    # wrap messages lines
-    walert = wrap_alert(alert,max_x-2)
-    # if message is more rows than terminal,
-    # truncate and add ... (no scrolling yet)
-    if len(walert)+1 > max_y:
-        walert = walert[:max_y-2]
-        walert.append("...")
-
     # setup alert window
     win.erase()
     win = win.subpad(0,0)
     win.hline(0,1,curses.ACS_HLINE,max_x-2)
+
+    # get latest alert
+    alert = get_alert(log)
+
+    # get header from alert
+    author, urgency, timestamp = get_header(alert.pop(0))
     alen, ulen, tlen = len(author), len(urgency), len(timestamp)
 
     # display alert header
@@ -426,7 +424,10 @@ def alert_win(win,max_y,max_x,log):
     win.addnstr(0,alen+6," {} ".format(timestamp),tlen+2,curses.color_pair(4)|curses.A_BOLD)
     win.addnstr(0,max_x-ulen-5," {} ".format(urgency),ulen+2,curses.color_pair(2)|curses.A_BOLD)
 
-    # write out alert text
+    # wrap messages lines
+    walert = wrap_alert(alert,max_x-2,max_y)
+
+    # write out alert 
     row = 1
     for line in walert:
         try:

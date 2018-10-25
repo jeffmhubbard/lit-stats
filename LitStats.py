@@ -145,21 +145,48 @@ def get_alert(file):
     alert = []
     file = os.path.expanduser(file)
     with open(file) as fp:
+        # get last 24 lines of log
         dq = deque(fp, 24)
+        # convert deque object to list
         for i in dq:
             alert.append(i.strip('\n'))
+    # return without dashed header and footer
     return alert[1:-2]
 
-def wrap_alert(data,max_x):
+def wrap_alert(alert, cols):
     """Check line length, split into two lines if too wide"""
-    new_data = []
-    for line in data:
-        if len(line) > max_x:
-            for clip in wrap(line,max_x-2):
-                new_data.append(clip)
+    nalert = []
+    for line in alert:
+        if len(line) > cols:
+            for wline in wrap(line,cols-2):
+                nalert.append(wline)
         else:
-            new_data.append(line)
-    return new_data
+            nalert.append(line)
+    return nalert
+
+def get_from(text):
+    """Return author, urgency, and timestamp from first line"""
+
+    # delete empty str elements from list
+    def _de(olist):
+        nlist = []
+        for item in olist:
+            if not item == str(''):
+                nlist.append(item)
+        return nlist
+
+    try:
+        # replace bracket strings with ,
+        bs = ['[author]','[/author]','[green]','[/green]']
+        for s in bs:
+            text = text.replace(s,',')
+        # split author from rest of line
+        author, rest = _de(text.split(',,'))
+        urgency, date, time = _de(rest.split(' '))
+        timestamp = date + ' ' + time
+        return author, urgency, timestamp
+    except:
+        return "---", "---", "---"
 
 
 ###########################################################
@@ -374,44 +401,41 @@ def write_stats(win,max_y,max_x):
 ###########################################################
 # stats window
 
-def alert_win(win,max_y,max_x):
+def alert_win(win,max_y,max_x,log):
     """Draw alert window"""
-    alert = get_alert(LOG_ALERT)
-    new_list = []
-    if alert:
-        row = 0
-        win.erase()
-        win = win.subpad(0,0)
-        win.hline(0,1,curses.ACS_HLINE,max_x-2)
-        alert = wrap_alert(alert,max_x-5)
-        if len(alert) > max_y:
-            alert = alert[:max_y-1]
-            alert.append("...")
-        for line in alert:
-            if row == 0:
-                author,urgency,timestamp = get_title(line)
-                alen = len(author)
-                ulen = len(urgency)
-                tlen = len(timestamp)
-                win.addnstr(row,3," {} ".format(author),alen+2,curses.color_pair(3)|curses.A_BOLD)
-                win.addnstr(row,alen+6," {} ".format(timestamp),tlen+2,curses.color_pair(4)|curses.A_BOLD)
-                win.addnstr(row,max_x-ulen-5," {} ".format(urgency),ulen+2,curses.color_pair(2)|curses.A_BOLD)
-            else:
-            	win.addnstr(row,1,line,len(line)+1)
+    alert = get_alert(log)
+    # get header from alert
+    author, urgency, timestamp = get_from(alert.pop(0))
+
+    # wrap messages lines
+    walert = wrap_alert(alert,max_x-2)
+    # if message is more rows than terminal,
+    # truncate and add ... (no scrolling yet)
+    if len(walert)+1 > max_y:
+        walert = walert[:max_y-2]
+        walert.append("...")
+
+    # setup alert window
+    win.erase()
+    win = win.subpad(0,0)
+    win.hline(0,1,curses.ACS_HLINE,max_x-2)
+    alen, ulen, tlen = len(author), len(urgency), len(timestamp)
+
+    # display alert header
+    win.addnstr(0,3," {} ".format(author),alen+2,curses.color_pair(3)|curses.A_BOLD)
+    win.addnstr(0,alen+6," {} ".format(timestamp),tlen+2,curses.color_pair(4)|curses.A_BOLD)
+    win.addnstr(0,max_x-ulen-5," {} ".format(urgency),ulen+2,curses.color_pair(2)|curses.A_BOLD)
+
+    # write out alert text
+    row = 1
+    for line in walert:
+        try:
+            win.addnstr(row,1,line,len(line)+1)
             row += 1
-        win.refresh(0,0,0,0,max_y,max_x)
+        except:
+            pass
 
-def get_title(text):
-    """Return author, urgency, and timestamp from first line"""
-    words = text.split(']')
-    author = words[2].replace("[/green","")
-    tmpstr = words[4].split()
-    urgency = tmpstr.pop(0)
-    timestamp = "{} {}".format(tmpstr[0],tmpstr[1])
-
-    if author and urgency and timestamp:
-        return author, urgency, timestamp
-    return False
+    win.refresh(0,0,0,0,max_y,max_x)
 
 
 ###########################################################
@@ -423,35 +447,40 @@ def main(win):
     curses.start_color()
     curses.curs_set(False)
 
+    # setup color, needs terminal detection...
     curses.start_color()
     curses.use_default_colors()
     for i in range(1,16):
         curses.init_pair(i, i-1, -1)
 
+    # some defaults
     cur_win = 1
     last_alert = None
     show_alert = False
     first_run = True
 
+    # get terminal size and create pad
     max_y,max_x = win.getmaxyx()
     pad = curses.newpad(max_y,max_x)
 
     while True:
 
-        max_y,max_x = win.getmaxyx()
-
+        # prevent displaying alert notification at start
         if first_run == True:
             last_alert = get_alert(LOG_ALERT)
             first_run = False
 
+        # check for alerts and set notification
         alert = get_alert(LOG_ALERT)
         if not alert == last_alert:
             last_alert = alert
             show_alert = True
 
+        # get key events
         pressed = win.getch()
         curses.flushinp()
 
+        # terminal resizing
         if pressed == curses.KEY_RESIZE:
             max_y,max_x = win.getmaxyx()
             pad.erase()
@@ -459,6 +488,7 @@ def main(win):
             curses.resize_term(max_y,max_x)
             pad.refresh(0,0,0,0,max_y,max_x)
 
+        # do stuff with keypress
         if pressed != -1:
             try:
                 key = str(chr(pressed))
@@ -477,10 +507,12 @@ def main(win):
                     break
 
         if cur_win == 1:
+            # display stats window and write out stats
             swin = stat_win(pad,max_y,max_x,show_alert)
             write_stats(swin,max_y,max_x)
         if cur_win == 2:
-            awin = alert_win(pad,max_y,max_x)
+            # display last alert and clear notification
+            awin = alert_win(pad,max_y,max_x,LOG_ALERT)
             show_alert = False
         pad.refresh(0,0,0,0,max_y,max_x)
         sleep(INTERVAL)

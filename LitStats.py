@@ -30,8 +30,8 @@ LOG_ALERT = '~/.config/EgoSoft/X3AP/log06689.txt'
 
 if len(sys.argv) > 1:
     if sys.argv[1] == '--debug':
-        LOG_STATS = './sample_stats.txt'
-        LOG_ALERT = './sample_alert.txt'
+        LOG_STATS = 'sample_stats.txt'
+        LOG_ALERT = 'sample_alert.txt'
 
 
 ###########################################################
@@ -75,7 +75,6 @@ def get_stats(file):
     file = os.path.expanduser(file)
     with open(file) as fp:
         lines = fp.read().split('\n')
-        lc = len(lines)
         if len(lines) < 42:
             return None
         data = {
@@ -124,15 +123,15 @@ def get_stats(file):
         }
     return data
 
-def ranked_color(n,nmax):
+def rank_cp(rank, rmax):
     """Return color_pair number based on percentage"""
-    if n == 0: n = 1
-    perc = 100 * float(n)/float(nmax)
-    if perc >= 75: color = 7 # cyan
-    elif perc < 75 and perc >= 50: color = 3 # green
-    elif perc < 50 and perc >= 25: color = 4 # yellow
-    else: color = 8 # white
-    return color
+    perc = 100 * float(rank)/float(rmax)
+    if rank < 0: return 2 # red
+    if rank == 0: rank = 1
+    if perc >= 75: return 7 # cyan
+    if perc >= 50: return 3 # green
+    if perc >= 25: return 4 # yellow
+    return 8 # white
 
 
 ###########################################################
@@ -268,23 +267,23 @@ def write_stats(win,max_y,max_x):
 
         trade_rank, trade_title = get_rank_title(data['trade_title'])
         trade_perc = data['trade_perc']
-        rank = ranked_color(trade_rank,30)
-        perc = ranked_color(trade_perc,100)
+        rank = rank_cp(trade_rank,30)
+        perc = rank_cp(trade_perc,100)
         win.addnstr(2,16,trade_rank,2,curses.color_pair(rank))
         win.addnstr(2,20,trade_perc+'%',4,curses.color_pair(perc))
         win.addnstr(2,25,trade_title,len(trade_title))
 
         combat_rank, combat_title = get_rank_title(data['combat_title'])
         combat_perc = data['combat_perc']
-        rank = ranked_color(combat_rank,30)
-        perc = ranked_color(combat_perc,100)
+        rank = rank_cp(combat_rank,30)
+        perc = rank_cp(combat_perc,100)
         win.addnstr(3,16,combat_rank,2,curses.color_pair(rank))
         win.addnstr(3,20,combat_perc+'%',4,curses.color_pair(perc))
         win.addnstr(3,25,combat_title,7)
 
         flc_perc = get_flc_perc(int(data['flc_rank']))
         flc_perc = str(flc_perc) 
-        perc = ranked_color(flc_perc,100)
+        perc = rank_cp(flc_perc,100)
         win.addnstr(4,16,flc_perc+'%',7,curses.color_pair(perc))
 
         time_played = get_elapsed(int(data['time_played']))
@@ -295,80 +294,80 @@ def write_stats(win,max_y,max_x):
 
         argon_rank, argon_title = get_rank_title(data['argon_title'])
         argon_perc = data['argon_perc']
-        rank = ranked_color(argon_rank,10)
-        perc = ranked_color(argon_perc,100)
+        rank = rank_cp(argon_rank,10)
+        perc = rank_cp(argon_perc,100)
         win.addnstr(8,16,argon_rank,2,curses.color_pair(rank))
         win.addnstr(8,20,argon_perc+'%',4,curses.color_pair(perc))
         win.addnstr(8,25,argon_title,len(argon_title))
 
         boron_rank, boron_title = get_rank_title(data['boron_title'])
         boron_perc = data['boron_perc']
-        rank = ranked_color(boron_rank,10)
-        perc = ranked_color(boron_perc,100)
+        rank = rank_cp(boron_rank,10)
+        perc = rank_cp(boron_perc,100)
         win.addnstr(9,16,boron_rank,2,curses.color_pair(rank))
         win.addnstr(9,20,boron_perc+'%',4,curses.color_pair(perc))
         win.addnstr(9,25,boron_title,len(boron_title))
 
         paranid_rank, paranid_title = get_rank_title(data['paranid_title'])
         paranid_perc = data['paranid_perc']
-        rank = ranked_color(paranid_rank,10)
-        perc = ranked_color(paranid_perc,100)
+        rank = rank_cp(paranid_rank,10)
+        perc = rank_cp(paranid_perc,100)
         win.addnstr(10,16,paranid_rank,2,curses.color_pair(rank))
         win.addnstr(10,20,paranid_perc+'%',4,curses.color_pair(perc))
         win.addnstr(10,25,paranid_title,len(paranid_title))
 
         split_rank, split_title = get_rank_title(data['split_title'])
         split_perc = data['split_perc']
-        rank = ranked_color(split_rank,10)
-        perc = ranked_color(split_perc,100)
+        rank = rank_cp(split_rank,10)
+        perc = rank_cp(split_perc,100)
         win.addnstr(11,16,split_rank,2,curses.color_pair(rank))
         win.addnstr(11,20,split_perc+'%',4,curses.color_pair(perc))
         win.addnstr(11,25,split_title,len(split_title))
 
         teladi_rank, teladi_title = get_rank_title(data['teladi_title'])
         teladi_perc = data['teladi_perc']
-        rank = ranked_color(teladi_rank,10)
-        perc = ranked_color(teladi_perc,100)
+        rank = rank_cp(teladi_rank,10)
+        perc = rank_cp(teladi_perc,100)
         win.addnstr(12,16,teladi_rank,2,curses.color_pair(rank))
         win.addnstr(12,20,teladi_perc+'%',4,curses.color_pair(perc))
         win.addnstr(12,25,teladi_title,len(teladi_title))
 
         terran_rank, terran_title = get_rank_title(data['terran_title'])
         terran_perc = data['terran_perc']
-        rank = ranked_color(terran_rank,10)
-        perc = ranked_color(terran_perc,100)
+        rank = rank_cp(terran_rank,10)
+        perc = rank_cp(terran_perc,100)
         win.addnstr(13,16,terran_rank,2,curses.color_pair(rank))
         win.addnstr(13,20,terran_perc+'%',4,curses.color_pair(perc))
         win.addnstr(13,25,terran_title,len(terran_title))
 
         atf_rank, atf_title = get_rank_title(data['atf_title'])
         atf_perc = data['atf_perc']
-        rank = ranked_color(atf_rank,10)
-        perc = ranked_color(atf_perc,100)
+        rank = rank_cp(atf_rank,10)
+        perc = rank_cp(atf_perc,100)
         win.addnstr(14,16,atf_rank,2,curses.color_pair(rank))
         win.addnstr(14,20,atf_perc+'%',4,curses.color_pair(perc))
         win.addnstr(14,25,atf_title,len(atf_title))
 
         goner_rank, goner_title = get_rank_title(data['goner_title'])
         goner_perc = data['goner_perc']
-        rank = ranked_color(goner_rank,10)
-        perc = ranked_color(goner_perc,100)
+        rank = rank_cp(goner_rank,10)
+        perc = rank_cp(goner_perc,100)
         win.addnstr(15,16,goner_rank,2,curses.color_pair(rank))
         win.addnstr(15,20,goner_perc+'%',4,curses.color_pair(perc))
         win.addnstr(15,25,goner_title,len(goner_title))
 
         yaki_rank, yaki_title = get_rank_title(data['yaki_title'])
         yaki_perc = data['yaki_perc']
-        rank = ranked_color(yaki_rank,10)
-        perc = ranked_color(yaki_perc,100)
+        rank = rank_cp(yaki_rank,10)
+        perc = rank_cp(yaki_perc,100)
         win.addnstr(16,16,yaki_rank,2,curses.color_pair(rank))
         win.addnstr(16,20,yaki_perc+'%',4,curses.color_pair(perc))
         win.addnstr(16,25,yaki_title,len(yaki_title))
 
         pirates_rank, pirates_title = get_rank_title(data['pirates_title'])
         pirates_perc = data['pirates_perc']
-        rank = ranked_color(pirates_rank,10)
-        perc = ranked_color(pirates_perc,100)
+        rank = rank_cp(pirates_rank,10)
+        perc = rank_cp(pirates_perc,100)
         win.addnstr(17,16,pirates_rank,2,curses.color_pair(rank))
         win.addnstr(17,20,pirates_perc+'%',4,curses.color_pair(perc))
         win.addnstr(17,25,pirates_title,len(pirates_title))

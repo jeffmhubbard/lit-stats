@@ -139,17 +139,23 @@ def ranked_color(n,nmax):
 # tools for alert window
 
 def get_alert(file):
+
     """Return alert as list of lines"""
     alert = []
-    file = os.path.expanduser(file)
+    file = os.path.expanduser(LOG_ALERT)
+    # get last 30 lines
     with open(file) as fp:
-        # get last 24 lines of log
-        dq = deque(fp, 24)
-        # convert deque object to list
+        dq = deque(fp, 30)
+        # convert deque to list 
         for i in dq:
-            alert.append(i.strip('\n'))
-    # return without dashed header and footer
-    return alert[1:-2]
+            alert.append(i.strip())
+        # detect beginning of alert 
+        while not alert[0].startswith('[author]'):
+            del alert[0]
+        # detect end of alert 
+        while alert[len(alert)-1] == "":
+            alert.pop()
+    return alert[:-1]
 
 def wrap_alert(alert, cols, rows):
     """Check line length, split into two lines if too wide"""

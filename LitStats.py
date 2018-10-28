@@ -126,7 +126,7 @@ def get_stats(file):
 def rank_cp(rank, rmax):
     """Return color_pair number based on percentage"""
     perc = 100 * float(rank)/float(rmax)
-    if rank < 0: return 2 # red
+    if float(rank) < 0: return 2 # red
     if rank == 0: rank = 1
     if perc >= 75: return 7 # cyan
     if perc >= 50: return 3 # green

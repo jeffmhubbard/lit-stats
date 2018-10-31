@@ -135,70 +135,6 @@ def rank_cp(rank, rmax):
 
 
 ###########################################################
-# tools for alert window
-
-def get_alert(file):
-
-    """Return alert as list of lines"""
-    alert = []
-    file = os.path.expanduser(LOG_ALERT)
-    # get last 30 lines
-    with open(file) as fp:
-        dq = deque(fp, 30)
-        # convert deque to list 
-        for i in dq:
-            alert.append(i.strip())
-        # detect beginning of alert 
-        while not alert[0].startswith('[author]'):
-            del alert[0]
-        # detect end of alert 
-        while alert[len(alert)-1] == "":
-            alert.pop()
-    return alert[:-1]
-
-def wrap_alert(alert, cols, rows):
-    """Check line length, split into two lines if too wide"""
-    nalert = []
-    # wrap lines greater than cols
-    for line in alert:
-        if len(line) > cols:
-            for wline in wrap(line, cols-2):
-                nalert.append(wline)
-        else:
-            nalert.append(line)
-    # truncate alert to fit terminal, append ...
-    if len(nalert)+1 > rows:
-        nalert = nalert[:rows-2]
-        nalert.append("...")
-
-    return nalert
-
-def get_header(line):
-    """Return author, urgency, and timestamp from first line"""
-
-    # delete empty str elements from list
-    def _de(olist):
-        nlist = []
-        for oitem in olist:
-            if not oitem == str(''):
-                nlist.append(oitem)
-        return nlist
-
-    try:
-        # replace bracket strings with ,
-        slist = ['[author]', '[/author]', '[green]', '[/green]']
-        for sitem in slist:
-            line = line.replace(sitem, ',')
-        # split author from rest of line
-        author, rline = _de(line.split(',,'))
-        urgency, date, time = _de(rline.split(' '))
-        timestamp = date + ' ' + time
-        return author, urgency, timestamp
-    except:
-        return "---", "---", "---"
-
-
-###########################################################
 # stats window
 
 def stat_win(win,max_y,max_x,show_alert=None):
@@ -225,7 +161,7 @@ def stat_win(win,max_y,max_x,show_alert=None):
     stat.addstr(9,2,"Boron",curses.color_pair(3)|curses.A_BOLD)
     stat.addstr(10,2,"Paranid",curses.color_pair(2)|curses.A_BOLD)
     stat.addstr(11,2,"Split",curses.color_pair(6)|curses.A_BOLD)
-    stat.addstr(12,2,"Teldai",curses.color_pair(4)|curses.A_BOLD)
+    stat.addstr(12,2,"Teladi",curses.color_pair(4)|curses.A_BOLD)
     stat.addstr(13,2,"Terran",curses.color_pair(7)|curses.A_BOLD)
     stat.addstr(14,2,"ATF",curses.color_pair(7)|curses.A_BOLD)
     stat.addstr(15,2,"Goner",curses.color_pair(5)|curses.A_BOLD)
@@ -408,6 +344,70 @@ def write_stats(win,max_y,max_x):
 
 
 ###########################################################
+# tools for alert window
+
+def get_alert(log):
+
+    """Return alert as list of lines"""
+    alert = []
+    file = os.path.expanduser(log)
+    # get last 30 lines
+    with open(file) as fp:
+        dq = deque(fp, 30)
+        # convert deque to list 
+        for i in dq:
+            alert.append(i.strip())
+        # detect beginning of alert 
+        while not alert[0].startswith('[author]'):
+            del alert[0]
+        # detect end of alert 
+        while alert[len(alert)-1] == "":
+            alert.pop()
+    return alert[:-1]
+
+def wrap_alert(alert, cols, rows):
+    """Check line length, split into two lines if too wide"""
+    nalert = []
+    # wrap lines greater than cols
+    for line in alert:
+        if len(line) > cols:
+            for wline in wrap(line, cols-2):
+                nalert.append(wline)
+        else:
+            nalert.append(line)
+    # truncate alert to fit terminal, append ...
+    if len(nalert)+1 > rows:
+        nalert = nalert[:rows-2]
+        nalert.append("...")
+
+    return nalert
+
+def get_header(line):
+    """Return author, urgency, and timestamp from first line"""
+
+    # delete empty str elements from list
+    def _de(olist):
+        nlist = []
+        for oitem in olist:
+            if not oitem == str(''):
+                nlist.append(oitem)
+        return nlist
+
+    try:
+        # replace bracket strings with ,
+        slist = ['[author]', '[/author]', '[green]', '[/green]']
+        for sitem in slist:
+            line = line.replace(sitem, ',')
+        # split author from rest of line
+        author, rline = _de(line.split(',,'))
+        urgency, date, time = _de(rline.split(' '))
+        timestamp = date + ' ' + time
+        return author, urgency, timestamp
+    except:
+        return "---", "---", "---"
+
+
+###########################################################
 # alert window
 
 def alert_win(win,max_y,max_x,log):
@@ -450,7 +450,6 @@ def alert_win(win,max_y,max_x,log):
 def main(win):
     """Setup curses and start loop"""
     win.nodelay(True)
-    curses.start_color()
     curses.curs_set(False)
 
     # setup color, needs terminal detection...

@@ -215,7 +215,7 @@ def write_stats(win,max_y,max_x):
         perc = rank_cp(combat_perc,100)
         win.addnstr(3,16,combat_rank,2,curses.color_pair(rank))
         win.addnstr(3,20,combat_perc+'%',4,curses.color_pair(perc))
-        win.addnstr(3,25,combat_title,7)
+        win.addnstr(3,25,combat_title,len(combat_title)
 
         flc_perc = get_flc_perc(int(data['flc_rank']))
         flc_perc = str(flc_perc) 
@@ -347,7 +347,6 @@ def write_stats(win,max_y,max_x):
 # tools for alert window
 
 def get_alert(log):
-
     """Return alert as list of lines"""
     alert = []
     file = os.path.expanduser(log)
